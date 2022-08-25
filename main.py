@@ -51,8 +51,7 @@ class ArtGen:
         pass
 
     def sent_splitter(self,txt):
-        sentences=txt.split('.')
-        return sentences
+        return txt.split('.')
 
     def news(self,query):
         all_news = {'title': [], 'link': [],'headline': [], 'date': []}
@@ -67,7 +66,7 @@ class ArtGen:
         all_news['link'].append(news["link"])
         all_news['headline'].append(news["desc"])
         all_news['date'].append(news["date"])
-            
+
         return all_news
 
     def time_comparison(self,times):
@@ -103,10 +102,7 @@ class ArtGen:
         return emoji_pattern.sub(r'', string)
 
     def reconcatenate(self,txt_list):
-        paragraph=""
-        for sentence in txt_list:
-            paragraph+=sentence+". "
-        return paragraph
+        return "".join(sentence+". " for sentence in txt_list)
 
     def image_save(self,link):
         f_name = 'images/image.jpg'
@@ -127,13 +123,13 @@ class ArtGen:
         ARTICLE=""
         image_flag=True
 
-        
-        # all_news=self.scrap.scrape(query)
-        
 
-        
+        # all_news=self.scrap.scrape(query)
+
+
+
         while image_flag:
-            
+
             if(len(all_news['date'])==0):
                 print("Sorry article will be generated after 15 minutes")
                 image_flag=False
@@ -142,13 +138,13 @@ class ArtGen:
                 news_headline=""
                 news_url=""
                 break
-                
+
 
             times=all_news['date']
             # ind=self.time_comparison(times)
-            
+
             query=all_news['title'][ind]
-            
+
             print("News is generated against: \n"+"*"*50+query+"*"*50)
             news_headline=query
             # URLs=search(query,  num_results=10, lang="en")
@@ -162,7 +158,7 @@ class ArtGen:
                 news_headline=""
                 news_url=""
                 break
-            
+
             for url in URLs:
                 try:
                     if(iteration_flag):
@@ -170,18 +166,18 @@ class ArtGen:
                         article.download()
                         article.parse()
                         article.nlp()
-                        
+
                         text=article.text
                         text=text.replace('?','.')
                         text=text.replace('"','')
                         text=self.url_removal(text)
                         text=self.remove_emoji(text)
                         sentences=self.sent_splitter(text)
-                        
+
                         for sent in sentences:
                             out=self.pp.rephrase(sent,1)
                             ARTICLE+=out
-                        
+
                         image_link=article.top_image
                         if (len(image_link)>1):
                             self.image_save(image_link)
@@ -205,14 +201,13 @@ class ArtGen:
                     print(ex)
                     image_flag=False
                     break
-                    
-        
+
+
         return ARTICLE,query,news_headline,news_url
 
     def save(self,name,content):
-        f = open(name, "w")
-        f.write(content)
-        f.close()
+        with open(name, "w") as f:
+            f.write(content)
 
     def header(self,article):
         try:
@@ -252,97 +247,93 @@ class ArtGen:
 
 
     def main_event(self):
+
         
-            
-            query_words=["metaverse","gamefi","nft"]
-            last_links={ "metaverse":[],"gamefi":[],"nft":[]}
-            self.clear_logs(query_words)
-            while True:
-                my_counter=0
-                for word in query_words:
+        query_words=["metaverse","gamefi","nft"]
+        last_links={ "metaverse":[],"gamefi":[],"nft":[]}
+        self.clear_logs(query_words)
+        while True:
+            my_counter=0
+            for word in query_words:
+                last=last_links[word]
+                if len(last)>=3:
+                    my_counter+=1
+            if my_counter==3:
+                print("********** THE DONE **********")
+                break
+
+            for word in query_words:
+                try:
                     last=last_links[word]
                     if len(last)>=3:
-                        my_counter+=1
-                if my_counter==3:
-                    print("********** THE DONE **********")
-                    break
+                        print("-------------passed-------------")
+                        continue
 
-                for word in query_words:
-                    try:
-                        last=last_links[word]
-                        if len(last)>=3:
-                            print("-------------passed-------------")
+                    all_news=self.scrap.scrape(word,1)
+
+                    if len(all_news['title'])<=3:
+                        all_news=self.scrap.scrape(word,0)
+
+
+
+
+                    ind=0
+                    while not (len(last) >= 3 or (len(all_news['title']) - 1) == ind):
+                        article,query,headline,url=self.news_extraction(last,word,all_news,ind)
+                        if (article=="") or (len(article)<150) :
+                            ind+=1
                             continue
 
-                        all_news=self.scrap.scrape(word,1)
+                        art_lst=self.para_maker(article)
+                        print("--------------------------------------------------------------------")
+                        article=""
+                        for line in art_lst:
+                            art_line=self.sm.summerize(line)
+                            art_line=self.sent_splitter(art_line)
+                            art_line=self.reconcatenate(art_line[:-1])
+                            article+=art_line
 
-                        if len(all_news['title'])<=3:
-                            all_news=self.scrap.scrape(word,0)
-                    
 
-                
-                        
-                        ind=0
-                        while True:
-                            if len(last)>=3 or (len(all_news['title'])-1)==ind:
-                                break
-                            
-                            article,query,headline,url=self.news_extraction(last,word,all_news,ind)
-                            if (article=="") or (len(article)<150) :
+
+                        if (query not in last) and (query is not ""):
+
+
+                            tweet=self.sm.summerize(article)
+                            tweets=self.sent_splitter(tweet)
+                            tweet=self.reconcatenate(tweets[:-1])
+                            if (" . ." in article) or ("sarah safina" in tweet):
                                 ind+=1
                                 continue
 
-                            art_lst=self.para_maker(article)
                             print("--------------------------------------------------------------------")
-                            article=""
-                            for line in art_lst:
-                                art_line=self.sm.summerize(line)
-                                art_line=self.sent_splitter(art_line)
-                                art_line=self.reconcatenate(art_line[:-1])
-                                article+=art_line
-                            
-                            
-                                
-                            if (query not in last) and (query is not ""):
+                            print("*"*50,query+"\n\n\n"+article+"\n\n\n"+tweet,"*"*50)
 
 
-                                tweet=self.sm.summerize(article)
-                                tweets=self.sent_splitter(tweet)
-                                tweet=self.reconcatenate(tweets[:-1])
-                                if (" . ." in article) or ("sarah safina" in tweet):
-                                    ind+=1
-                                    continue
+                            # head_block=self.header(article)
+                            img_block="image.jpg"
 
-                                print("--------------------------------------------------------------------")
-                                print("*"*50,query+"\n\n\n"+article+"\n\n\n"+tweet,"*"*50)
+                            head_block=query
 
-                                        
-                                # head_block=self.header(article)
-                                img_block="image.jpg"
-                                
-                                head_block=query
+                            self.up=uploading.Upload()
+                            self.up.login()
+                            if success := self.up.create_blog(
+                                head_block, article, img_block, word
+                            ):
+                                self.save_logs(word,head_block,url,tweet)
+                                if len(last)==10:
+                                    last.pop(0)
+                                last.append(query)
+                                print("Article is generated")
 
-                                self.up=uploading.Upload()
-                                self.up.login()
-                                success=self.up.create_blog(head_block,article,img_block,word)
-                                
-                                
-                                if(success):
-                                    self.save_logs(word,head_block,url,tweet)
-                                    if len(last)==10:
-                                        last.pop(0)
-                                    last.append(query)
-                                    print("Article is generated")
+                        ind +=1
 
-                            ind +=1
+                except Exception as e:
+                    print(e)
+                    continue    
 
-                    except Exception as e:
-                        print(e)
-                        continue    
-                
-                # script will rerun itself after evry 15 minutes
-                print("___________________Waiting for next turn _______________________")
-                time.sleep(60)  
+            # script will rerun itself after evry 15 minutes
+            print("___________________Waiting for next turn _______________________")
+            time.sleep(60)  
 
 
 

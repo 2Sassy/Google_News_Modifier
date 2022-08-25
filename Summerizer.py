@@ -8,8 +8,7 @@ class Summery:
 
     def summerize(self,article):
         text=self.summarizer(article,early_stopping=False, max_length=80, min_length=40, do_sample=False)
-        result=text[0]['summary_text']
-        return result
+        return text[0]['summary_text']
 
 
 

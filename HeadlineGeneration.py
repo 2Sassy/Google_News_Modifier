@@ -14,7 +14,7 @@ class Title_Generation:
         self.model = self.model.to(self.device)
         
     def generate(self, article):
-        
+
         text=article
         max_len = 256
         encoding = self.tokenizer.encode_plus(text, return_tensors = "pt")
@@ -34,10 +34,8 @@ class Title_Generation:
         return result
 
     def summerizer(self,original_text):
-        short_summary = summarize(original_text)
-        return short_summary
+        return summarize(original_text)
 
     def generate_title(self, article):
         text=self.summarizer(article, max_length=10, min_length=10, do_sample=False)
-        result=text[0]['summary_text']
-        return result
+        return text[0]['summary_text']
