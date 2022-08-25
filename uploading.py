@@ -33,7 +33,7 @@ class Upload:
         except:
             self.driver.close()
     def create_blog(self,my_tittle,my_para,my_img,mycat):
-        
+
         try:
 
             flag=True
@@ -56,20 +56,20 @@ class Upload:
             #select category
 
             cat=""
-            if mycat=="nft":
-                cat="in-category-11"
-            elif mycat=="metaverse":
+            if mycat == "metaverse":
                 cat="in-category-12"
+            elif mycat == "nft":
+                cat="in-category-11"
             else:
                 cat="in-category-13"
-                            
+
             category_div = self.driver.find_element_by_css_selector("div[id='category-all']")
             self.driver.execute_script("arguments[0].scrollTop = (0,300)", category_div)
             category = self.driver.find_element_by_id(cat).click()
             time.sleep(2)
 
-           
-            
+
+
 
 
             #uploading image
@@ -83,8 +83,8 @@ class Upload:
             self.keyboard.press(Key.esc)
             self.keyboard.release(Key.esc)
 
-            
-            image = '/home/ali/Documents/BlogGenerationAutomation/images/'+my_img
+
+            image = f'/home/ali/Documents/BlogGenerationAutomation/images/{my_img}'
             input_file = "//input[starts-with(@id,'html5_')]"
             self.driver.find_element_by_xpath(input_file).send_keys(image)
 
@@ -97,7 +97,6 @@ class Upload:
             self.driver.execute_script("scroll(0, 0);")
             time.sleep(2)
 
-             # place title here
             top_title = self.driver.find_element_by_id("title")
             top_title.send_keys(my_tittle)
 
@@ -115,14 +114,14 @@ class Upload:
             #finally publish Blog here
             # self.driver.find_element_by_css_selector("input[id='publish']").click()
             self.driver.find_element_by_css_selector("input[id='save-post']").click()
-            
+
             time.sleep(5)
             self.driver.close()
         except Exception as e:
             print(e)
             self.driver.close()
             flag=False
-        
+
 
         return flag
 

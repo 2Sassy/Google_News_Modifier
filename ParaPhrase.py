@@ -9,10 +9,6 @@ class Phrase:
     
 
   def rephrase(self,input_text,num_return_sequences):
-    output=self.plg.replag2(input_text)
-    
-   
-    
-    return output
+    return self.plg.replag2(input_text)
 
     
